@@ -1,0 +1,170 @@
+#include <stdio.h>
+#include<stdlib.h>
+#define maxsize 20
+typedef int ElemType;
+typedef struct term
+{
+	int row, col;
+	ElemType value;
+}Term;
+typedef struct sparsematrix
+{
+	int m, n,t;    //行，列，实际非零元素的个数
+	Term table[maxsize]; //存储非零元素的三元组表
+
+}Sparsematrix; 
+
+
+void TranSetting(int array[][maxsize], Sparsematrix *B)//将稀疏矩阵转换为三元组表
+{
+	B->t = 1;
+	for(int i=1;i<=B->m ;i++)
+	{   
+		for (int j = 1; j <= B->n; j++)
+		{
+			if (array[i][j] != 0)  //如果矩阵中的元素不是零，则将该元素的行列值存在三元组中
+			{
+				B->table[B->t].row = i;
+				B->table[B->t].col = j;
+				B->table[B->t].value = array[i][j];;
+				B->t++;
+			}
+		}
+	}
+	B->t--;
+}
+CreatXSJZ(Sparsematrix *A)  //创建稀疏矩阵
+{
+	int Array[maxsize][maxsize] = { 0 };  //初始化二元数组
+	printf("请输入稀疏矩阵的行数和列数：\n");
+	scanf_s("%d%d",&A->m ,&A->n);
+	printf("请输入稀疏矩阵的元素\n");
+	for (int i = 1; i <= A->m; i++)
+	{
+		for (int j = 1; j <= A->n; j++)
+		{
+			scanf_s("%d", &Array[i][j]);
+		}
+	}
+	TranSetting(Array, A);   //将稀疏矩阵转换为三元组
+}
+void RE_TranSetting(Sparsematrix A, int array[][maxsize])//将三元组转二维数组（稀疏矩阵）
+{
+	for (int i = 1; i <= A.t; i++)
+	{
+		array[A.table [i].row][A.table[i].col] = A.table[i].value; //稀疏矩阵中的非零
+	}
+}
+
+void Output(Sparsematrix D)
+{
+	int Array[maxsize][maxsize] = { 0 }; //初始化二维数组
+	RE_TranSetting(D,Array);  //将三元组转二维数组（稀疏矩阵）
+	for (int i = 1; i <= D.m; i++)
+	{
+		for (int j = 1; j <= D.n; j++)
+		{
+			printf("%d ", Array[i][j]); //输出稀疏矩阵
+		}
+		printf("\n");
+	}
+}
+
+int Addsparsematrix(Sparsematrix A, Sparsematrix B, Sparsematrix *C) //用三元组表示将稀疏矩阵A和B 相加存在C中
+{
+	int row_a, row_b, col_a, col_b, index_a, index_b, index_c;//A元素的行号，B元素的行号，A元素的列号，B元素的列号，A、B、C三个矩阵三元组的地址
+	C->m = A.m; 
+	C->n = A.n;
+	if (A.m != B.m || A.n != B.n) //非同类型矩阵不可相加
+		return 0;
+	for (index_a = 1, index_b = 1, index_c = 1; index_a <= A.t && index_b <= B.t; )
+	{
+		row_a = A.table[index_a].row;//A矩阵元素的行号
+		col_a = A.table[index_a].col;//A矩阵元素的列号
+		row_b = B.table[index_b].row;//B矩阵元素的行号
+		col_b = B.table[index_b].col;//B矩阵元素的列号
+		if(row_a<row_b) //当A中元素的行数小于B中元素的行数，直接A中该元素放到C中
+		{
+				C->table[index_c].row = A.table[index_a].row;
+				C->table[index_c].col = A.table[index_a].col;
+				C->table[index_c].value = A.table[index_a].value;
+				index_a++;
+				index_c++;
+		}
+		else if (row_a > row_b) //当A中元素的行数大于B中元素的行数，直接B中该元素放到C中
+			{
+			   C->table[index_c].row = B.table[index_b].row;
+			   C->table[index_c].col = B.table[index_b].col;
+			   C->table[index_c].value = B.table[index_b].value;
+			   index_b++;
+			   index_c++;
+		    }
+		else
+		{
+			if (col_a < col_b) //行数相同，当A中元素的列数小于B中元素的列数，直接A中该元素放到C中
+			{
+				C->table[index_c].row = A.table[index_a].row;
+				C->table[index_c].col = A.table[index_a].col;
+				C->table[index_c].value = A.table[index_a].value;
+				index_a++;
+				index_c++;
+			}
+			else if (col_a > col_b) //行数相同，当A中元素的列数大于B中元素的列数
+			{
+				C->table[index_c].row = B.table[index_b].row;
+				C->table[index_c].col = B.table[index_b].col;
+				C->table[index_c].value = B.table[index_b].value;
+				index_b++;
+				index_c++;
+			}
+			else //当A中元素的行列数等于B中元素的行列数
+			{
+				if (A.table[index_a].value + B.table[index_b].value)//判断相加后的值是否为零
+				{
+					C->table[index_c].row = A.table[index_b].row;
+					C->table[index_c].col = A.table[index_b].col;
+					C->table[index_c].value = A.table[index_a].value + B.table[index_b].value; //当行列相同时，元素的值相加
+					index_c++;
+				}
+					index_a++;
+					index_b++;
+			}
+		}	
+	}
+	while (index_a <= A.t) //A三元组没有遍历完的时候，依次把未遍历的A中的元素存入三元组C中
+	{
+		C->table[index_c].row = A.table[index_a].row;
+		C->table[index_c].col = A.table[index_a].col;
+		C->table[index_c].value = A.table[index_a].value;
+		index_a++;
+		index_c++;
+	}
+	while (index_b <= B.t) //B三元组没有遍历完的时候，依次把未遍历的B中的元素存入三元组C中
+	{
+		C->table[index_c].row = B.table[index_b].row;
+		C->table[index_c].col = B.table[index_b].col;
+		C->table[index_c].value = B.table[index_b].value;
+		index_b++;
+		index_c++;
+	}
+	C->t = index_c - 1;
+	return 1;
+}
+
+
+int main()
+{
+	Sparsematrix P,Q,R;
+	printf("创建第一个稀疏矩阵的:\n");
+	CreatXSJZ(&P);
+	printf("第一个稀疏矩阵的:\n");
+	Output(P);
+	printf("创建第二个稀疏矩阵的:\n");
+	CreatXSJZ(&Q);
+	printf("第二个稀疏矩阵的:\n");
+	Output(Q);
+	Addsparsematrix(P, Q, &R);
+	printf("稀疏矩阵A加稀疏矩阵B后：\n");
+	Output(R);
+	return 0;
+}
