@@ -1,0 +1,110 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define Error 0;
+#define Ok 1;
+typedef int ElemType;
+typedef int Status;
+typedef struct Node
+{
+ElemType element;
+struct Node *link;
+}Node;
+typedef struct
+{
+struct Node *head;
+int n;
+}HeaderList;
+Status Init(HeaderList *h)
+{
+h->head =(Node*)malloc(sizeof(Node));
+if(!h->head )
+	return Error;
+h->head ->link =NULL;
+h->n =0;
+return Ok;
+}
+
+Status Insert(HeaderList *h,int i,ElemType x)
+{
+ int j;
+ Node *p,*q;
+ if(i<-1||i>h->n-1)
+	return Error;
+ p=h->head;
+ for(j=0;j<=i;j++)
+  {
+	p=p->link   ;
+  }
+ q=(Node*)malloc(sizeof(Node));
+ q->element =x;
+ q->link=p->link ;
+ p->link=q;
+ h->n++;
+}
+
+Status Output(HeaderList *L)
+{
+Node *p;
+if(!L->n )
+	return Error;
+p=L->head->link  ;
+while(p)
+ {
+	printf("%d ",p->element );
+	p=p->link ;
+ }
+ printf("\n");
+ return Ok;
+}
+
+/*实现单链表逆置*/
+Status ReverSet(HeaderList *L)
+{
+Node *p,*q,*s;
+p=L->head ; 
+q=p->link ;
+while(q)
+{
+s=q->link ;
+q->link =p;
+p=q;
+q=s;
+}
+L->head ->link->link =NULL;
+L->head ->link =p;
+return 0;
+}
+
+Status Delete(HeaderList* h, int i)
+{
+	int j;
+	Node* p, * q;
+	if (!h->n)
+		return Error;
+	if (i<0 || i>h->n - 1)
+	{
+		return Error;
+		q = h->head;
+		for (j = 0; j < i; j++)
+			q = q->link;
+		p = q->link;
+		q->link = p->link;
+		free(p);
+		h->n--;
+		return Ok;
+	}
+}
+void main()
+{
+int i;
+HeaderList list;
+Init(&list);
+printf("带表头结点的单链表为：\n");
+for(i=0;i<11;i++)
+   Insert(&list,i-1,i);
+Output(&list);
+ReverSet(&list);
+printf("逆置后的单链表为：\n");
+Output(&list);
+return;
+}
