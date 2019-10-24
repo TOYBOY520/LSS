@@ -1,0 +1,104 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define Error 0;
+#define Ok 1;
+typedef int ElemType;
+typedef int Status;
+typedef struct Node
+{
+ElemType element;
+struct Node *link;
+}Node;
+typedef struct
+{
+struct Node *head;
+int n;
+}HeaderList;
+Status Init(HeaderList *h)
+{
+h->head =(Node*)malloc(sizeof(Node));
+if(!h->head )
+	return Error;
+h->head ->link =NULL;
+h->n =0;
+return Ok;
+}
+
+Status Insert(HeaderList *h,int i,ElemType x)
+{
+ int j;
+ Node *p,*q;
+ if(i<-1||i>h->n-1)
+	return Error;
+ p=h->head;
+ for(j=0;j<=i;j++)
+  {
+	p=p->link   ;
+  }
+ q=(Node*)malloc(sizeof(Node));
+ q->element =x;
+ q->link=p->link ;
+ p->link=q;
+ h->n++;
+}
+
+Status Output(HeaderList *L)
+{
+Node *p;
+if(!L->n )
+	return Error;
+p=L->head->link  ;
+while(p)
+ {
+	printf("%d ",p->element );
+	p=p->link ;
+ }
+ printf("\n");
+ return Ok;
+}
+
+HeaderList* CombineList(HeaderList *h,HeaderList *L)
+{
+	Node* p=h->head->link ;
+	Node* q=L->head ->link ;
+	Node* s=h->head ;
+	while(p&&q)
+	{
+		if(p->element >q->element ) 
+		{
+			Node* t=q;
+			q=q->link;
+			t->link =p;
+			s->link =t;
+			s=t; 
+		}
+		else
+		{
+			s=s->link ;p=p->link ;
+		}
+	 }
+	 if(q) s->link =q;
+	 return h; 
+}
+
+void main()
+{
+int i;
+HeaderList list1,list2,list3;
+Init(&list1);
+Init(&list2);
+Init(&list3);
+for(i=0;i<11;i++)
+ {
+  Insert(&list1,i-1,2*i-1);
+  Insert(&list2,i-1,2*i);
+ }
+printf("第一个有序递增单链表为：\n");
+Output(&list1);
+printf("第二个有序递增单链表为：\n");
+Output(&list2);
+CombineList(&list1,&list2);
+printf("合并后的单链表为：\n");
+Output(&list1);
+return;
+}
