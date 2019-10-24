@@ -1,0 +1,167 @@
+#include <stdio.h>
+#include<stdlib.h>
+typedef struct PNode
+{
+	int coef;          //系数
+	int exp;           //指数
+	struct PNode *link;
+}PNode;
+
+typedef struct
+{
+	struct PNode *head;
+}polynominal;
+
+/*多项式的创建*/
+polynominal Create(polynominal* p,int n) //创建一个含有n项的多项式
+{
+	PNode *pn, *pre, *q;
+	p->head = malloc(sizeof(PNode));
+	p->head->exp= -1;
+	p->head->link =NULL;
+	for (int i=0;i<n;i++)
+	{
+		pn = malloc(sizeof(PNode));
+		printf("coef(系数): ");
+		scanf("%d",&pn->coef);
+		printf(" exp(指数): ");
+		scanf("%d",&pn->exp );
+		if (pn->exp < 0)
+			break;
+		pre = p->head;
+		q = p->head->link;
+		while (q && q->exp > pn->exp)
+		{
+			pre = q;
+			q = q->link;
+		}
+		pn->link =q;
+		pre->link=pn;
+    }
+	return *p;
+}
+
+
+void Destory(polynominal* p)   //撤销链表,使其成为空表
+{
+	if (p->head == NULL)
+		return;
+	PNode* px = p->head;
+	while (p->head)
+	{
+		px = px->link;
+		free(p->head);
+		p->head = px;
+	}
+}
+
+void Add(polynominal* px, polynominal* qx)    //两个多项式相加,相加后的结果放在qx中
+{   
+	PNode* q, * q1, * p, * temp;   //p q用来遍历两个多项式，q1便于在q中插入新结点,temp用于申请要插入的新结点的空间
+	p = px->head->link;
+	while (p) 
+	{
+		q = qx->head->link;
+		q1 = qx->head;
+		while (q && p->exp < q->exp)   //跳过q->exp的大项
+		{    
+			q1 = q;                   //q1放在q的前一个结点，便于二者之间插入新结点
+			q = q->link;
+		}
+		if (!q || p->exp != q->exp)   //q遍历到最后一个结点仍然比p大的时候，在q最后接上当前p的结点
+		{ 
+			temp = (PNode*)malloc(sizeof(PNode));
+			temp->coef = p->coef;
+			temp->exp = p->exp;
+			temp->link = q;
+			q1->link = temp;
+		}
+		else if (p->exp == q->exp)     //二者相等，则合并
+		{                 
+			q->coef += p->coef;
+			if (q->coef == 0)
+			{
+				q1->link = p->link;
+				free(q);
+			}
+		}
+		p = p->link;
+	}
+}
+
+void Multiply(polynominal* p, polynominal* q, polynominal* s, polynominal* temp) //把多项式s放在表头h的链表中
+{
+	if (s->head!=NULL)                                     //当s的表头结点存在时，需要撤销掉s
+		Destory(&s);
+	
+	s->head = (PNode*)malloc(sizeof(PNode));           //申请表头结点的空间
+	s->head->exp =-1;
+	s->head->link = NULL;
+	
+	PNode* px, *qx, *temp1;
+	temp->head = (PNode*)malloc(sizeof(PNode));         //创建表头结点
+	temp->head->exp =-1;
+	temp->head->link = (PNode*)malloc(sizeof(PNode));    //创建第一个结点
+	temp->head->link->link =NULL;
+	temp1 = temp->head->link;
+	px = p->head->link;
+	while (px) 
+	{
+		qx = q->head->link;
+		while (qx) 
+		{                 
+			temp1->coef =px->coef * qx->coef;
+			temp1->exp = px->exp + qx->exp;
+		    Add(temp,s);   //把p q中每一项相乘的结果加到s中，Add函数会自动合并
+			qx = qx->link;
+		}
+		px = px->link;
+	}
+}
+
+/*输出多项式*/
+void display(polynominal *L)
+{
+	PNode *str;
+	str= L->head->link ;
+	printf("运算后的多项式为： ");
+	while (str!= NULL)
+	{   
+		
+		if (str->exp==0)
+			printf("%d", str->coef);
+		else 
+		{
+		    printf("%d x^ %d", str->coef, str->exp);
+		}
+		str = str->link;
+		if (str!= NULL)
+			printf("+");
+	}
+	printf("\n");
+}
+
+
+void main()
+{
+	int n1,n2;
+	printf("请输入多项式的项数n: ");
+	scanf("%d",&n1);
+	polynominal A1,A2,A3,A4;
+	A4.head =A3.head =NULL;
+	printf("请输入第一个多项式各项的系数和指数：\n");
+	Create(&A1,n1);
+	printf("请输入多项式的项数n: ");
+	scanf("%d",&n2);
+	printf("请输入第二个多项式各项的系数和指数：\n");
+	Create(&A2,n2);
+	Add(&A1, &A2);   //多项式相加
+	display(&A2);    //输出相加后的多项式
+	Multiply(&A1,&A2,&A3,&A4);  //多项式相乘，通过A3返回
+	display(&A3);    //输出相乘后的多项式
+	Destory(&A4);
+	Destory(&A3);
+	Destory(&A2);
+	Destory(&A1);
+	return 0;
+}
