@@ -1,0 +1,127 @@
+#include<stdio.h>
+#include<stdlib.h>
+typedef char ElemType;
+typedef struct BinaryTreeNode
+{
+	ElemType Date;
+	struct BinaryTreeNode* lchild, * rchild;
+}BinaryTreeNode,*BiTree;
+
+void PreCreateBt(BiTree *t) //先序创建二叉树
+{
+	char ch;
+	ch = getchar();
+	if ( ch == '#')     //输入为#表示这里建立的是空二叉树，即遍历算法的空操作
+		*t=NULL;
+	else
+	{
+		*t = (BinaryTreeNode*)malloc(sizeof(BinaryTreeNode));
+		(*t)->Date=ch;    //构造根节点
+		PreCreateBt(&(*t)->lchild);    //构造左子树
+		PreCreateBt(&(*t)->rchild);    //构造右子树
+	}
+}
+
+void PreOrderTransverse(BinaryTreeNode* t)   //二叉树的先序遍历算法
+{
+	if (t == NULL)
+		return;  
+	printf("%c",t->Date);   //打印输出根节点
+	PreOrderTransverse(t->lchild); //先序遍历左子树
+	PreOrderTransverse(t->rchild);  //先序遍历右子树
+}
+
+void InOrderTransverse(BinaryTreeNode* t)   //二叉树的中序遍历算法
+{
+
+	if (t == NULL)
+		return;
+	InOrderTransverse(t->lchild); //中序遍历左子树
+	printf ("%c",t->Date);   //打印输出根节点
+	InOrderTransverse(t->rchild);  //中序遍历右子树
+	
+}
+void PostOrderTransverse(BinaryTreeNode* t)   //二叉树的中序遍历算法
+{
+	if (t == NULL)
+		return;
+	PostOrderTransverse(t->lchild); //中序遍历左子树
+	PostOrderTransverse(t->rchild);  //中序遍历右子树
+	printf("%c" ,t->Date);   //打印输出根节点
+}
+
+int Size(BiTree p) //递归计算以p为根的二叉树中的结点个数
+{
+	if (p==NULL)
+		return 0;  //递归出口
+    return Size(p->lchild)+ Size(p->rchild)+1;  //总结点个数
+}
+
+int SizeofLeafNode(BiTree p)
+{
+	int numLeafNode = 0;
+	if (p == NULL)
+		return 0;
+	else
+	{
+		if (p->lchild == NULL && p->rchild == NULL)
+			numLeafNode++;
+		else
+		{
+			return SizeofLeafNode(p->lchild)+SizeofLeafNode(p->rchild); //返回叶子节点数
+		}
+	}
+}
+
+int Depth(BiTree p)  //递归计算二叉树的高度
+{
+	int lh, rh;
+	if (p==NULL)
+		return 0;
+	else 
+	{
+		lh = Depth(p->lchild);  //计算左子树的深度
+		rh = Depth(p->rchild);  //计算右子树的深度
+		if (lh >rh)  //取最大值
+			return lh+1;
+		return rh+1;
+	}
+}
+
+void exchange(BiTree p)  //递归交换二叉树的左右
+{
+	BiTree temp;
+	if (p==NULL)
+		return;
+	if (p->lchild != NULL && p->rchild != NULL)
+	{
+		temp = p->lchild;   //利用temp辅助交换左右子树
+		p->lchild = p->rchild;
+		p->rchild = temp;
+		exchange(p->lchild);
+		exchange(p->rchild);
+	}
+}
+
+int main()
+{
+	BiTree T;
+	printf("构造二叉树（请输入）：\n");
+	PreCreateBt(&T);
+	printf("\n二叉树的先序遍历：\n");
+	PreOrderTransverse(T);
+	printf("\n二叉树的中序遍历：\n");
+	InOrderTransverse(T);
+	printf("\n二叉树的后序遍历：\n");
+	PostOrderTransverse(T);
+	printf("\n二叉树的结点个数：\n");
+	printf("%d",Size(T));
+	printf("\n二叉树的叶子结点个数：\n");
+	printf("%d", SizeofLeafNode(T));
+	printf("\n二叉树的高度：\n");
+	printf("%d",Depth(T));
+	exchange(T);
+	printf("\n交换二叉树的左右子树后的先序遍历：\n");
+	PreOrderTransverse(T);
+	return 0;
+}
